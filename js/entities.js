@@ -3,17 +3,42 @@
    ========================================================================== */
 
 // Supplied Tiny RPG pack: each walk sheet has eight 100px frames.
+// Tiny Swords units use a 192px frame grid. The two packs draw their characters
+// at very different scales within their frame, so each sprite carries its own
+// drawSize (tuned so all four classes appear the same height in-game, feet
+// lined up on the same ground point) instead of a single global constant.
 const RPG_SPRITES = {};
 const RPG_PACK = 'Tiny RPG Character Asset Pack 01 v2.0 -Free Soldier&Orc/Characters(100x100 split)/';
-function loadRpgSprite(key, path) { RPG_SPRITES[key] = new Image(); RPG_SPRITES[key].src = RPG_PACK + path; }
-loadRpgSprite('soldierWalk', 'Soldier/Soldier with shadows/Soldier_Walk.png');
-loadRpgSprite('soldierAttack1', 'Soldier/Soldier with shadows/Soldier_Attack01.png');
-loadRpgSprite('soldierAttack2', 'Soldier/Soldier with shadows/Soldier_Attack02.png');
-loadRpgSprite('soldierIdle', 'Soldier/Soldier with shadows/Soldier_Idle.png');
-loadRpgSprite('orcWalk', 'Orc/Orc with shadows/Orc_Walk.png');
-loadRpgSprite('orcAttack1', 'Orc/Orc with shadows/Orc_Attack01.png');
-loadRpgSprite('orcAttack2', 'Orc/Orc with shadows/Orc_Attack02.png');
-loadRpgSprite('orcIdle', 'Orc/Orc with shadows/Orc_Idle.png');
+const SWORDS_PACK = "Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Blue Units/";
+const SPRITE_META = {};
+const ANCHOR_RATIO = 166 / 240; // vertical anchor: fraction of drawSize above the feet point
+function loadRpgSprite(key, path, frameSize, drawSize) {
+  RPG_SPRITES[key] = new Image();
+  RPG_SPRITES[key].src = RPG_PACK + path;
+  SPRITE_META[key] = { frameSize, drawSize };
+}
+function loadSwordsSprite(key, path, frameSize, drawSize) {
+  RPG_SPRITES[key] = new Image();
+  RPG_SPRITES[key].src = SWORDS_PACK + path;
+  SPRITE_META[key] = { frameSize, drawSize };
+}
+// Dövüşçü (Knight): Soldier
+loadRpgSprite('soldierWalk', 'Soldier/Soldier with shadows/Soldier_Walk.png', 100, 275);
+loadRpgSprite('soldierAttack1', 'Soldier/Soldier with shadows/Soldier_Attack01.png', 100, 275);
+loadRpgSprite('soldierAttack2', 'Soldier/Soldier with shadows/Soldier_Attack02.png', 100, 275);
+loadRpgSprite('soldierIdle', 'Soldier/Soldier with shadows/Soldier_Idle.png', 100, 275);
+// Tank (Armored Axeman): Orc
+loadRpgSprite('orcWalk', 'Orc/Orc with shadows/Orc_Walk.png', 100, 323);
+loadRpgSprite('orcAttack1', 'Orc/Orc with shadows/Orc_Attack01.png', 100, 323);
+loadRpgSprite('orcAttack2', 'Orc/Orc with shadows/Orc_Attack02.png', 100, 323);
+loadRpgSprite('orcIdle', 'Orc/Orc with shadows/Orc_Idle.png', 100, 323);
+// Avcı (Archer): Tiny Swords Archer
+loadSwordsSprite('archerIdle', 'Archer/Archer_Idle.png', 192, 121);
+loadSwordsSprite('archerRun', 'Archer/Archer_Run.png', 192, 121);
+loadSwordsSprite('archerShoot', 'Archer/Archer_Shoot.png', 192, 121);
+// Büyücü (Wizard): Tiny Swords Monk (closest robed caster in the supplied packs)
+loadSwordsSprite('wizardIdle', 'Monk/Idle.png', 192, 155);
+loadSwordsSprite('wizardRun', 'Monk/Run.png', 192, 155);
 
 class Player {
   constructor(x, y) {
@@ -113,10 +138,12 @@ class Player {
     const sy = this.pos.y - camera.y;
 
     const sprite = RPG_SPRITES[this.spriteKey];
+    const meta = SPRITE_META[this.spriteKey] || { frameSize: 100, drawSize: 240 };
+    const fs = meta.frameSize, drawSize = meta.drawSize;
     if (sprite.complete && sprite.naturalWidth) {
-      const frame = Math.floor(this.animationTime * (this.vel.mag() > 0 ? 10 : 3)) % Math.max(1, Math.floor(sprite.naturalWidth / 100));
+      const frame = Math.floor(this.animationTime * (this.vel.mag() > 0 ? 10 : 3)) % Math.max(1, Math.floor(sprite.naturalWidth / fs));
       ctx.save(); ctx.translate(sx, sy); if (this.vel.x < 0) ctx.scale(-1, 1);
-      ctx.drawImage(sprite, frame * 100, 0, 100, 100, -120, -166, 240, 240); ctx.restore();
+      ctx.drawImage(sprite, frame * fs, 0, fs, fs, -drawSize / 2, -drawSize * ANCHOR_RATIO, drawSize, drawSize); ctx.restore();
     } else { ctx.fillStyle='#e8a64c';ctx.fillRect(sx-24,sy-32,48,56); }
 
     // Render Orbital Weapons

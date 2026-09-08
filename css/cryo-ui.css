@@ -3,7 +3,7 @@
 :root{
   --cryo-panel:url("../Cryo's Mini GUI/GUI/Fixed/frame-panel.png");
   --cryo-slot:url("../Cryo's Mini GUI/GUI/Fixed/frame-slot.png");
-  --cryo-button:url("../Cryo's Mini GUI/Buttons/buttons_4x.png");
+  --cryo-button:url("../Cryo's Mini GUI/Buttons/Fixed/button-normal.png");
 }
 .vitals-panel,.stats-widget,.wave-widget,.shop-card-window,.level-window,.char-card{
   border-style:solid;
@@ -27,6 +27,8 @@
   border-width:10px;
   border-image-width:10px;
 }
+.char-card i{display:flex;align-items:center;justify-content:center;height:76px;margin-bottom:8px}
+.char-card i img{max-height:76px;max-width:76px;image-rendering:pixelated}
 .weapon-slot-hud{
   background-color:#314b35;
   background-image:var(--cryo-slot);
@@ -34,6 +36,18 @@
   background-repeat:no-repeat;
   image-rendering:pixelated;
 }
-.shop-buy-btn,.lock-btn,.btn-secondary,.btn-start-wave,.recycle-btn{background-image:var(--cryo-button);background-size:512px 64px;background-position:left top;background-repeat:repeat-x;border:3px solid #241d23;text-shadow:1px 1px #241d23}
-.shop-buy-btn,.btn-start-wave{color:#251d18}
-.lock-btn,.btn-secondary{color:#fff0c1;background-color:#4b544b;background-position:-128px top}
+.shop-buy-btn,.lock-btn,.btn-secondary,.btn-start-wave{
+  border-style:solid;
+  border-width:0 10px;
+  border-image-source:var(--cryo-button);
+  border-image-slice:0 20 fill;
+  border-image-width:0 10px;
+  border-image-repeat:stretch;
+  image-rendering:pixelated;
+  color:#2b2013;
+  text-shadow:none;
+}
+.shop-buy-btn,.btn-start-wave{box-shadow:inset 0 -4px 0 #6fae46}
+.lock-btn,.btn-secondary{box-shadow:inset 0 -4px 0 #57707c}
+.lock-btn.locked{box-shadow:inset 0 -4px 0 #ffe17e;color:#7a5b12}
+.shop-buy-btn:disabled{opacity:.5;filter:grayscale(.5);cursor:not-allowed;box-shadow:inset 0 -4px 0 #6b7a6b}

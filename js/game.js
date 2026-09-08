@@ -61,23 +61,23 @@ class GameEngine {
   selectCharacter(charType) {
     document.getElementById('char-select-screen').style.display = 'none';
 
-    if (charType === 'brawler') {
+    if (charType === 'brawler') { // Dövüşçü -> Knight (Soldier)
       this.player.stats.attackSpeedMult = 1.4;
-      this.player.spriteKey = 'soldierAttack1';
+      this.player.spriteKey = 'soldierWalk';
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.katana, 1));
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.sawblade, 1));
-    } else if (charType === 'ranger') {
+    } else if (charType === 'ranger') { // Avcı -> Archer
       this.player.stats.damageMult = 1.2;
-      this.player.spriteKey = 'soldierWalk';
+      this.player.spriteKey = 'archerRun';
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.smg, 1));
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.laser, 1));
-    } else if (charType === 'mage') {
+    } else if (charType === 'mage') { // Büyücü -> Wizard (Monk)
       this.player.stats.damageMult = 1.3;
-      this.player.spriteKey = 'soldierAttack2';
+      this.player.spriteKey = 'wizardRun';
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.lightning, 1));
       this.player.weapons.push(new Weapon(WEAPON_DATABASE.laser, 1));
-    } else { // Tank
-      this.player.spriteKey = 'soldierIdle';
+    } else { // Tank -> Armored Axeman (Orc)
+      this.player.spriteKey = 'orcWalk';
       this.player.stats.maxHp = 150;
       this.player.hp = 150;
       this.player.stats.armor = 4;
