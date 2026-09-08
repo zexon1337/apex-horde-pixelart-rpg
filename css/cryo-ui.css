@@ -1,2 +1,39 @@
-/* Cryo's Mini GUI artwork is used as the UI's panel texture and button face. */
-:root{--cryo-gui:url("../Cryo's Mini GUI/GUI/GUI_4x.png");--cryo-button:url("../Cryo's Mini GUI/Buttons/buttons_4x.png")}.vitals-panel,.stats-widget,.wave-widget{background-color:#263d2e;background-image:linear-gradient(#263d2edb,#263d2edb),var(--cryo-gui);background-size:auto,304px 224px;background-position:center}.weapon-slot-hud{background-color:#314b35;background-image:linear-gradient(#314b35d9,#314b35d9),var(--cryo-gui);background-size:auto,304px 224px;background-position:center}.shop-card-window,.level-window{background-color:#2c4232;background-image:linear-gradient(#2c4232ee,#2c4232ee),var(--cryo-gui);background-size:auto,304px 224px;background-position:center}.shop-buy-btn,.lock-btn,.btn-secondary,.btn-start-wave,.recycle-btn{background-image:var(--cryo-button);background-size:512px 64px;background-position:left top;background-repeat:repeat-x;border:3px solid #241d23;text-shadow:1px 1px #241d23}.shop-buy-btn,.btn-start-wave{color:#251d18}.lock-btn,.btn-secondary{color:#fff0c1;background-color:#4b544b;background-position:-128px top}.char-card{background-image:linear-gradient(#314a35e8,#314a35e8),var(--cryo-gui);background-size:auto,304px 224px;background-position:center}
+/* Cryo's Mini GUI artwork, cleanly sliced into a stretchable wood-frame panel
+   and a single item-slot frame (fixes the old raw-sheet overlap bug). */
+:root{
+  --cryo-panel:url("../Cryo's Mini GUI/GUI/Fixed/frame-panel.png");
+  --cryo-slot:url("../Cryo's Mini GUI/GUI/Fixed/frame-slot.png");
+  --cryo-button:url("../Cryo's Mini GUI/Buttons/buttons_4x.png");
+}
+.vitals-panel,.stats-widget,.wave-widget,.shop-card-window,.level-window,.char-card{
+  border-style:solid;
+  border-image-source:var(--cryo-panel);
+  border-image-slice:32;
+  border-image-repeat:stretch;
+  image-rendering:pixelated;
+}
+.vitals-panel,.stats-widget,.wave-widget{
+  background-color:#263d2e;
+  border-width:10px;
+  border-image-width:10px;
+}
+.shop-card-window,.level-window{
+  background-color:#2c4232;
+  border-width:16px;
+  border-image-width:16px;
+}
+.char-card{
+  background-color:#314a35;
+  border-width:10px;
+  border-image-width:10px;
+}
+.weapon-slot-hud{
+  background-color:#314b35;
+  background-image:var(--cryo-slot);
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+}
+.shop-buy-btn,.lock-btn,.btn-secondary,.btn-start-wave,.recycle-btn{background-image:var(--cryo-button);background-size:512px 64px;background-position:left top;background-repeat:repeat-x;border:3px solid #241d23;text-shadow:1px 1px #241d23}
+.shop-buy-btn,.btn-start-wave{color:#251d18}
+.lock-btn,.btn-secondary{color:#fff0c1;background-color:#4b544b;background-position:-128px top}
