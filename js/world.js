@@ -2,6 +2,43 @@
    SHADOW WILDERNESS: Procedural World Generation, Weather & Lighting Engine
    ========================================================================== */
 
+// FreeEnvironment pack sprites used to render resource nodes on the map.
+const ENV_SPRITES = {};
+const ENV_PACK = 'assets/environment/';
+function loadEnvSprite(key, file) { ENV_SPRITES[key] = new Image(); ENV_SPRITES[key].src = ENV_PACK + file; }
+loadEnvSprite('tree_pine_dark', 'tree_pine_dark.png');
+loadEnvSprite('tree_pine_snow', 'tree_pine_snow.png');
+loadEnvSprite('tree_round_dark', 'tree_round_dark.png');
+loadEnvSprite('tree_round_med', 'tree_round_med.png');
+loadEnvSprite('tree_bare', 'tree_bare.png');
+loadEnvSprite('rock_gray', 'rock_gray.png');
+loadEnvSprite('rock_ice', 'rock_ice.png');
+loadEnvSprite('coral_red', 'coral_red.png');
+loadEnvSprite('coral_orange', 'coral_orange.png');
+loadEnvSprite('coral_purple', 'coral_purple.png');
+loadEnvSprite('bush_spiky', 'bush_spiky.png');
+loadEnvSprite('plant_aloe', 'plant_aloe.png');
+loadEnvSprite('cactus_tall_1', 'cactus_tall_1.png');
+loadEnvSprite('cactus_tall_2', 'cactus_tall_2.png');
+loadEnvSprite('cactus_flower', 'cactus_flower.png');
+loadEnvSprite('fruit_apple', 'fruit_apple.png');
+loadEnvSprite('fruit_grapes', 'fruit_grapes.png');
+// Variant pools per resource type, so the map doesn't look repetitive.
+const ENV_VARIANTS = {
+  oak: ['tree_round_dark', 'tree_round_med'],
+  pine: ['tree_pine_dark', 'tree_pine_snow'],
+  desert: ['cactus_tall_1', 'cactus_tall_2'],
+  stone: ['rock_gray'],
+  iron: ['rock_gray'],
+  crystal: ['coral_purple', 'coral_red', 'coral_orange'],
+  berry: ['bush_spiky', 'plant_aloe', 'cactus_flower'],
+};
+function pickEnvVariant(subType, seedX, seedY) {
+  const pool = ENV_VARIANTS[subType] || ['rock_gray'];
+  const idx = Math.abs(Math.floor(seedX * 7 + seedY * 13)) % pool.length;
+  return pool[idx];
+}
+
 class World {
   constructor(cols = 160, rows = 160, tileSize = 64) {
     this.cols = cols;
@@ -75,7 +112,8 @@ class World {
 
         if (rand < 0.12) {
           // Tree (Wood)
-          const treeType = this.tiles[x][y] === 'dark_grass' ? 'pine' : 'oak';
+          let treeType = this.tiles[x][y] === 'dark_grass' ? 'pine' : 'oak';
+          if (this.tiles[x][y] === 'sand') treeType = 'desert';
           this.resources.push(new ResourceNode(posX, posY, 'tree', treeType, 100));
           this.pathGrid.setObstacle(x, y, true);
         } else if (rand < 0.16) {
@@ -240,15 +278,17 @@ class World {
 }
 
 // Resource Node Entity (Trees, Rocks, Bushes)
+const ENV_DRAW_HEIGHT = { tree: 108, rock: 56, bush: 40 };
 class ResourceNode {
   constructor(x, y, category, subType, hp) {
     this.x = x;
     this.y = y;
     this.category = category; // 'tree', 'rock', 'bush'
-    this.subType = subType; // 'oak', 'pine', 'stone', 'iron', 'crystal', 'berry'
+    this.subType = subType; // 'oak', 'pine', 'desert', 'stone', 'iron', 'crystal', 'berry'
     this.hp = hp;
     this.maxHp = hp;
     this.radius = 24;
+    this.spriteKey = pickEnvVariant(subType, x, y);
   }
 
   inView(camera) {
@@ -274,11 +314,15 @@ class ResourceNode {
     ctx.ellipse(sx, sy + 14, 20, 10, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    if (this.category === 'tree') {
-      // Trunk
+    const sprite = ENV_SPRITES[this.spriteKey];
+    if (sprite && sprite.complete && sprite.naturalWidth) {
+      const h = ENV_DRAW_HEIGHT[this.category] || 60;
+      const w = h * (sprite.naturalWidth / sprite.naturalHeight);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite, sx - w / 2, sy - h + 12, w, h);
+    } else if (this.category === 'tree') {
       ctx.fillStyle = '#5c3a21';
       ctx.fillRect(sx - 6, sy - 5, 12, 20);
-      // Leaves
       ctx.fillStyle = this.subType === 'pine' ? '#1b4d2e' : '#2e7d32';
       ctx.beginPath();
       ctx.arc(sx, sy - 18, 22, 0, Math.PI * 2);
@@ -296,7 +340,6 @@ class ResourceNode {
       ctx.beginPath();
       ctx.arc(sx, sy, 14, 0, Math.PI * 2);
       ctx.fill();
-      // Berries
       ctx.fillStyle = '#e91e63';
       ctx.beginPath();
       ctx.arc(sx - 4, sy - 3, 4, 0, Math.PI * 2);
