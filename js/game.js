@@ -2,6 +2,24 @@
    BROTATO x VAMPIRE SURVIVORS: Game Loop, Spawner & Render Controller
    ========================================================================== */
 
+// FreeEnvironment pack sprites used for map decoration (trees/rocks/bushes).
+const ENV_SPRITES = {};
+const ENV_PACK = 'assets/environment/';
+function loadEnvSprite(key, file) { ENV_SPRITES[key] = new Image(); ENV_SPRITES[key].src = ENV_PACK + file; }
+loadEnvSprite('tree_pine_dark', 'tree_pine_dark.png');
+loadEnvSprite('tree_pine_snow', 'tree_pine_snow.png');
+loadEnvSprite('tree_round_dark', 'tree_round_dark.png');
+loadEnvSprite('tree_round_med', 'tree_round_med.png');
+loadEnvSprite('tree_bare', 'tree_bare.png');
+loadEnvSprite('rock_gray', 'rock_gray.png');
+loadEnvSprite('coral_red', 'coral_red.png');
+loadEnvSprite('coral_orange', 'coral_orange.png');
+loadEnvSprite('coral_purple', 'coral_purple.png');
+loadEnvSprite('bush_spiky', 'bush_spiky.png');
+loadEnvSprite('plant_aloe', 'plant_aloe.png');
+const ENV_TREE_VARIANTS = ['tree_round_dark', 'tree_round_med', 'tree_pine_dark', 'tree_pine_snow'];
+const ENV_ROCK_VARIANTS = ['rock_gray', 'bush_spiky', 'plant_aloe', 'coral_purple'];
+
 class GameEngine {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -310,6 +328,7 @@ class GameEngine {
     this.ctx.fillRect(0, 0, this.width, this.height);
     // Fine 16px terrain cells: paths, ponds and foliage form shapes rather than large square tiles.
     const tile=16, startX=Math.floor(this.camera.x/tile)*tile, startY=Math.floor(this.camera.y/tile)*tile;
+    const decorSpots = [];
     for(let y=startY;y<this.camera.y+this.height+tile;y+=tile)for(let x=startX;x<this.camera.x+this.width+tile;x+=tile){
       const sx=x-this.camera.x,sy=y-this.camera.y,gx=x/tile,gy=y/tile,seed=Math.abs((gx*17+gy*31)%97);
       const road=Math.abs(y-this.worldHeight/2)<42 || Math.abs(x-this.worldWidth/2)<28;
@@ -317,9 +336,25 @@ class GameEngine {
       const pondB=(x-3180)*(x-3180)/12000+(y-2920)*(y-2920)/20000<1;
       this.ctx.fillStyle=pondA||pondB?'#3b7391':road?'#a88758':seed<11?'#365e37':'#3e713d';this.ctx.fillRect(sx,sy,16,16);
       if(pondA||pondB){if(seed%5===0){this.ctx.fillStyle='#75a9bb';this.ctx.fillRect(sx+3,sy+5,8,2)}}
-      else if(!road&&seed===13){this.ctx.fillStyle='#24502d';this.ctx.fillRect(sx+4,sy+3,9,11);this.ctx.fillStyle='#589349';this.ctx.fillRect(sx+2,sy,12,7)}
-      else if(!road&&seed===37){this.ctx.fillStyle='#778056';this.ctx.fillRect(sx+4,sy+8,9,5);this.ctx.fillStyle='#a8a47a';this.ctx.fillRect(sx+6,sy+5,5,4)}
+      else if(!road&&seed===13){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'tree'})}
+      else if(!road&&seed===37){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'rock'})}
       else if(seed%17===0){this.ctx.fillStyle=seed%2?'#8cb84d':'#f2dc6d';this.ctx.fillRect(sx+7,sy+5,2,6);this.ctx.fillRect(sx+5,sy+7,6,2)}
+    }
+    // Decoration pass: draw real sprites on top, sorted by depth (lower on screen = drawn later = in front).
+    decorSpots.sort((a,b)=>a.sy-b.sy);
+    for(const d of decorSpots){
+      const pool = d.kind==='tree' ? ENV_TREE_VARIANTS : ENV_ROCK_VARIANTS;
+      const key = pool[Math.abs(Math.floor(d.gx*7+d.gy*13))%pool.length];
+      const sprite = ENV_SPRITES[key];
+      const h = d.kind==='tree' ? 84 : 40;
+      if(sprite && sprite.complete && sprite.naturalWidth){
+        const w = h*(sprite.naturalWidth/sprite.naturalHeight);
+        this.ctx.drawImage(sprite, d.sx-w/2, d.sy-h+8, w, h);
+      } else if(d.kind==='tree'){
+        this.ctx.fillStyle='#24502d';this.ctx.fillRect(d.sx-4,d.sy-13,9,11);this.ctx.fillStyle='#589349';this.ctx.fillRect(d.sx-6,d.sy-16,12,7);
+      } else {
+        this.ctx.fillStyle='#778056';this.ctx.fillRect(d.sx-4,d.sy-8,9,5);this.ctx.fillStyle='#a8a47a';this.ctx.fillRect(d.sx-2,d.sy-11,5,4);
+      }
     }
 
     // Render XP Gems
