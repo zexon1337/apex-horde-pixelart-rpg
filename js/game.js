@@ -330,14 +330,36 @@ class GameEngine {
     const tile=16, startX=Math.floor(this.camera.x/tile)*tile, startY=Math.floor(this.camera.y/tile)*tile;
     const decorSpots = [];
     for(let y=startY;y<this.camera.y+this.height+tile;y+=tile)for(let x=startX;x<this.camera.x+this.width+tile;x+=tile){
-      const sx=x-this.camera.x,sy=y-this.camera.y,gx=x/tile,gy=y/tile,seed=Math.abs((gx*17+gy*31)%97);
+      const sx=x-this.camera.x,sy=y-this.camera.y,gx=x/tile,gy=y/tile;
+      const seed=Math.abs((gx*17+gy*31)%97), seed2=Math.abs((gx*53+gy*29)%61);
       const road=Math.abs(y-this.worldHeight/2)<42 || Math.abs(x-this.worldWidth/2)<28;
-      const pondA=(x-2150)*(x-2150)/17000+(y-2260)*(y-2260)/9000<1;
-      const pondB=(x-3180)*(x-3180)/12000+(y-2920)*(y-2920)/20000<1;
-      this.ctx.fillStyle=pondA||pondB?'#3b7391':road?'#a88758':seed<11?'#365e37':'#3e713d';this.ctx.fillRect(sx,sy,16,16);
-      if(pondA||pondB){if(seed%5===0){this.ctx.fillStyle='#75a9bb';this.ctx.fillRect(sx+3,sy+5,8,2)}}
-      else if(!road&&seed===13){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'tree'})}
-      else if(!road&&seed===37){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'rock'})}
+      const dPondA=(x-2150)*(x-2150)/17000+(y-2260)*(y-2260)/9000;
+      const dPondB=(x-3180)*(x-3180)/12000+(y-2920)*(y-2920)/20000;
+      const pondA=dPondA<1, pondB=dPondB<1;
+      const shoreA=!pondA&&dPondA<1.2, shoreB=!pondB&&dPondB<1.25;
+
+      if(pondA||pondB){
+        this.ctx.fillStyle=seed%7===0?'#4a87a4':(seed%3===0?'#356a86':'#3b7391');
+        this.ctx.fillRect(sx,sy,16,16);
+        if(seed%5===0){this.ctx.fillStyle='#8fc3d5';this.ctx.fillRect(sx+3,sy+5,8,2)}
+        if(seed2%11===0){this.ctx.fillStyle='#254f66';this.ctx.fillRect(sx+2,sy+10,5,1)}
+      } else if((shoreA||shoreB)&&!road){
+        this.ctx.fillStyle=seed%2?'#cdac6d':'#d8b97c';
+        this.ctx.fillRect(sx,sy,16,16);
+        if(seed2%4===0){this.ctx.fillStyle='#b8925a';this.ctx.fillRect(sx+(seed%9),sy+(seed2%9),2,1)}
+      } else if(road){
+        this.ctx.fillStyle=seed%9===0?'#9c7c4e':(seed%2?'#a88758':'#b09362');
+        this.ctx.fillRect(sx,sy,16,16);
+        if(seed2%6===0){this.ctx.fillStyle='#7c623c';this.ctx.fillRect(sx+(seed%10),sy+(seed2%10),2,2)}
+      } else {
+        this.ctx.fillStyle=seed<7?'#2e5230':seed<15?'#365e37':seed<72?'#3e713d':'#487d47';
+        this.ctx.fillRect(sx,sy,16,16);
+        if(seed2%5===0){this.ctx.fillStyle=seed%2?'#4d8a4a':'#2c4f2d';this.ctx.fillRect(sx+(seed2%11),sy+(seed%11),1,2)}
+      }
+
+      if(road||pondA||pondB||shoreA||shoreB) continue;
+      if(seed===13){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'tree'})}
+      else if(seed===37){decorSpots.push({sx:sx+8,sy:sy+16,gx,gy,kind:'rock'})}
       else if(seed%17===0){this.ctx.fillStyle=seed%2?'#8cb84d':'#f2dc6d';this.ctx.fillRect(sx+7,sy+5,2,6);this.ctx.fillRect(sx+5,sy+7,6,2)}
     }
     // Decoration pass: draw real sprites on top, sorted by depth (lower on screen = drawn later = in front).
